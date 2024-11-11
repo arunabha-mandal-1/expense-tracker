@@ -59,7 +59,11 @@ fun HomeScreen(navController: NavController) {
     // Starting Home Screen ...
     Surface(modifier = Modifier.fillMaxSize()) {
         val bgColor = if (isSystemInDarkTheme()) Color.Black else Color.White
-        ConstraintLayout(modifier = Modifier.fillMaxSize().background(bgColor)) {
+        ConstraintLayout(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(bgColor)
+        ) {
             val (nameRow, card, list, topBar, dummy, add) = createRefs()
 
             // Top image section which covers status bar
@@ -81,7 +85,7 @@ fun HomeScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 60.dp, start = 16.dp, end = 16.dp)
+                    .padding(top = 30.dp, start = 16.dp, end = 16.dp)
                     .constrainAs(nameRow) {
                         // Set constraint with respect to parent
                         top.linkTo(parent.top)
@@ -104,11 +108,11 @@ fun HomeScreen(navController: NavController) {
                 }
 
                 // Notification icon
-                Image(
-                    painter = painterResource(id = R.drawable.ic_notification),
-                    contentDescription = null,
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                )
+//                Image(
+//                    painter = painterResource(id = R.drawable.ic_notification),
+//                    contentDescription = null,
+//                    modifier = Modifier.align(Alignment.CenterEnd)
+//                )
             }
 
             val state = viewModel.transactions.collectAsState(initial = emptyList())
@@ -119,6 +123,7 @@ fun HomeScreen(navController: NavController) {
             // Card section to show balance, income and expense
             CardItem(
                 modifier = Modifier
+                    .padding(top = 10.dp)
                     .constrainAs(card) {
                         top.linkTo(nameRow.bottom)
                         start.linkTo(parent.start)
@@ -131,24 +136,26 @@ fun HomeScreen(navController: NavController) {
 
             // Transaction list to show recent transactions
             TransactionList(
-                modifier = Modifier.constrainAs(list) {
-                    top.linkTo(card.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    bottom.linkTo(parent.bottom)
-                    height = Dimension.fillToConstraints
-                },
+                modifier = Modifier
+                    .padding(bottom = 5.dp)
+                    .constrainAs(list) {
+                        top.linkTo(card.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        bottom.linkTo(add.top)
+                        height = Dimension.fillToConstraints
+                    },
                 list = state.value
             )
-
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = null,
-                tint = Zinc,
+                tint = Color.White,
                 modifier = Modifier
+                    .padding(end = 5.dp, bottom = 5.dp)
                     .size(48.dp)
                     .clip(CircleShape)
-                    .padding(end = 10.dp, bottom = 10.dp)
+                    .background(Zinc)
                     .constrainAs(add) {
                         bottom.linkTo(parent.bottom)
                         end.linkTo(parent.end)
