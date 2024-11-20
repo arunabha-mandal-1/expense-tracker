@@ -8,7 +8,13 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun NavHostScreen(){
     val navController = rememberNavController()
+
+    // Change start destination according to shared preferences
+
     NavHost(navController = navController, startDestination = "/home"){
+        composable(route = "/welcome"){
+            WelcomeScreen(navController)
+        }
         composable(route = "/home"){
             HomeScreen(navController)
         }
