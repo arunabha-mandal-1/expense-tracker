@@ -28,8 +28,8 @@ class MainActivity : ComponentActivity() {
                 ) {
 //                    AddTransaction()
 //                    HomeScreen()
-//                    NavHostScreen()
-                    WelcomeScreen(navController = rememberNavController())
+                    NavHostScreen()
+//                    WelcomeScreen(navController = rememberNavController())
                 }
             }
         }

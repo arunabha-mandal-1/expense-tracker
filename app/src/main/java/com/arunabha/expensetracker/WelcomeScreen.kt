@@ -1,5 +1,6 @@
 package com.arunabha.expensetracker
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -19,10 +20,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -34,17 +37,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.arunabha.expensetracker.ui.theme.Purple40
 import com.arunabha.expensetracker.ui.theme.Zinc
+import kotlinx.coroutines.launch
 
 @Composable
 fun WelcomeScreen(navController: NavController) {
 
     // User's name
     val name = remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val dataStore = StoreUserInfo(context)
     val bgColor = if (isSystemInDarkTheme()) Color.Black else Color.White // Hard-coded
 
-    Surface(modifier = Modifier.fillMaxSize().background(bgColor)) {
+//    val sharedPreferences = context.getSharedPreferences("screen", context.)
+
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(bgColor)
+    ) {
         Column(modifier = Modifier.fillMaxWidth()) {
 
             Box(
@@ -106,7 +118,19 @@ fun WelcomeScreen(navController: NavController) {
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Zinc),
 //            enabled = !errFlag,
-                onClick = {}
+                onClick = {
+                    val flag = name.value.isEmpty()
+                    if (flag) {
+                        Toast.makeText(context, "Please enter your name", Toast.LENGTH_SHORT).show()
+                    } else {
+                        scope.launch {
+                            dataStore.saveName(name.value)
+                            dataStore.saveRegStatus(true)
+                        }
+                        navController.navigate("/home")
+                        navController.clearBackStack("/welcome")
+                    }
+                }
             ) {
                 Text(
                     text = "Continue",
