@@ -1,5 +1,6 @@
 package com.arunabha.expensetracker
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -27,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +51,7 @@ import com.arunabha.expensetracker.data.model.TransactionEntity
 import com.arunabha.expensetracker.ui.theme.Zinc
 import com.arunabha.expensetracker.viewmodel.HomeViewModel
 import com.arunabha.expensetracker.viewmodel.HomeViewModelFactory
+import kotlinx.coroutines.launch
 
 // App's Home Screen
 @Composable
@@ -55,10 +59,12 @@ fun HomeScreen(navController: NavController) {
     // Initializing Viewmodel using custom viewmodel factory
     val viewModel: HomeViewModel =
         HomeViewModelFactory(LocalContext.current).create(HomeViewModel::class.java)
+    val state = viewModel.transactions.collectAsState(initial = emptyList())
 
     val context = LocalContext.current
     val dataStore = StoreUserInfo(context)
     val userName = dataStore.getName.collectAsState(initial = "")
+    val coroutineScope = rememberCoroutineScope()
 
     // Starting Home Screen ...
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -119,7 +125,6 @@ fun HomeScreen(navController: NavController) {
 //                )
             }
 
-            val state = viewModel.transactions.collectAsState(initial = emptyList())
             val expenses = viewModel.getTotalExpense(state.value)
             val income = viewModel.getTotalIncome(state.value)
             val balance = viewModel.getBalance(state.value)
@@ -135,7 +140,17 @@ fun HomeScreen(navController: NavController) {
                     },
                 balance = balance,
                 income = income,
-                expense = expenses
+                expense = expenses,
+                onResetClick = {
+                    coroutineScope.launch {
+                        val flag = viewModel.deleteTransactions()
+                        if(flag){
+                            Toast.makeText(context, "Transactions deleted successfully!", Toast.LENGTH_SHORT).show()
+                        }else{
+                            Toast.makeText(context, "Something went wrong!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
             )
 
             // Transaction list to show recent transactions
@@ -185,7 +200,13 @@ fun HomeScreen(navController: NavController) {
 
 // Card Composable to show balance, income and expense
 @Composable
-fun CardItem(modifier: Modifier, balance: String, income: String, expense: String) {
+fun CardItem(
+    modifier: Modifier,
+    balance: String,
+    income: String,
+    expense: String,
+    onResetClick: () -> Unit
+) {
     Column(
         modifier = modifier
             .padding(16.dp)
@@ -217,8 +238,14 @@ fun CardItem(modifier: Modifier, balance: String, income: String, expense: Strin
 
             // Dots Menu
             Image(
-                painter = painterResource(id = R.drawable.dots_menu),
-                contentDescription = null
+                painter = painterResource(id = R.drawable.reset_icon),
+                contentDescription = null,
+                modifier = Modifier
+                    .width(25.dp)
+                    .height(25.dp)
+                    .clickable {
+                        onResetClick()
+                    }
             )
         }
 
