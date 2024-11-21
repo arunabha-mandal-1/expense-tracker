@@ -123,6 +123,9 @@ fun AddTransaction(navController: NavController) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = null,
+                    modifier = Modifier.clickable {
+                        navController.popBackStack() // Back to main screen
+                    }
                 )
                 Text(
                     text = "Add Transaction",
