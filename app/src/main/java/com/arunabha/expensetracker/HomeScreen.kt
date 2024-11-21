@@ -60,116 +60,116 @@ fun HomeScreen(navController: NavController) {
     val dataStore = StoreUserInfo(context)
     val userName = dataStore.getName.collectAsState(initial = "")
 
-        // Starting Home Screen ...
-        Surface(modifier = Modifier.fillMaxSize()) {
-            val bgColor = if (isSystemInDarkTheme()) Color.Black else Color.White
-            ConstraintLayout(
+    // Starting Home Screen ...
+    Surface(modifier = Modifier.fillMaxSize()) {
+        val bgColor = if (isSystemInDarkTheme()) Color.Black else Color.White
+        ConstraintLayout(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(bgColor)
+        ) {
+            val (nameRow, card, list, topBar, dummy, add) = createRefs()
+
+            // Top image section which covers status bar
+            Image(
+                painter = painterResource(id = R.drawable.ic_topbar),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(bgColor)
-            ) {
-                val (nameRow, card, list, topBar, dummy, add) = createRefs()
-
-                // Top image section which covers status bar
-                Image(
-                    painter = painterResource(id = R.drawable.ic_topbar),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .constrainAs(topBar) {
-                            // Set constraints with respect to parent
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        }
-                )
-
-                // Card section which will greet user, show his/her name and notification
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 30.dp, start = 16.dp, end = 16.dp)
-                        .constrainAs(nameRow) {
-                            // Set constraint with respect to parent
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        }
-                ) {
-                    Column {
-
-                        // Greeting Text
-                        Text(text = "Good Morning!", fontSize = 16.sp, color = Color.White)
-
-                        // Name Text
-                        Text(
-                            text = userName.value!!,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                    .fillMaxWidth()
+                    .constrainAs(topBar) {
+                        // Set constraints with respect to parent
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
                     }
+            )
 
-                    // Notification icon
+            // Card section which will greet user, show his/her name and notification
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 30.dp, start = 16.dp, end = 16.dp)
+                    .constrainAs(nameRow) {
+                        // Set constraint with respect to parent
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    }
+            ) {
+                Column {
+
+                    // Greeting Text
+                    Text(text = "Good Morning!", fontSize = 16.sp, color = Color.White)
+
+                    // Name Text
+                    Text(
+                        text = userName.value!!,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                // Notification icon
 //                Image(
 //                    painter = painterResource(id = R.drawable.ic_notification),
 //                    contentDescription = null,
 //                    modifier = Modifier.align(Alignment.CenterEnd)
 //                )
-                }
+            }
 
-                val state = viewModel.transactions.collectAsState(initial = emptyList())
-                val expenses = viewModel.getTotalExpense(state.value)
-                val income = viewModel.getTotalIncome(state.value)
-                val balance = viewModel.getBalance(state.value)
+            val state = viewModel.transactions.collectAsState(initial = emptyList())
+            val expenses = viewModel.getTotalExpense(state.value)
+            val income = viewModel.getTotalIncome(state.value)
+            val balance = viewModel.getBalance(state.value)
 
-                // Card section to show balance, income and expense
-                CardItem(
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-                        .constrainAs(card) {
-                            top.linkTo(nameRow.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        },
-                    balance = balance,
-                    income = income,
-                    expense = expenses
-                )
+            // Card section to show balance, income and expense
+            CardItem(
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .constrainAs(card) {
+                        top.linkTo(nameRow.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    },
+                balance = balance,
+                income = income,
+                expense = expenses
+            )
 
-                // Transaction list to show recent transactions
-                TransactionList(
-                    modifier = Modifier
-                        .padding(bottom = 5.dp)
-                        .constrainAs(list) {
-                            top.linkTo(card.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            bottom.linkTo(add.top)
-                            height = Dimension.fillToConstraints
-                        },
-                    list = state.value
-                )
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier
-                        .padding(end = 5.dp, bottom = 5.dp)
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(Zinc)
-                        .constrainAs(add) {
-                            bottom.linkTo(parent.bottom)
-                            end.linkTo(parent.end)
-                        }
-                        .clickable {
-                            navController.navigate("/add")
-                        }
-                )
+            // Transaction list to show recent transactions
+            TransactionList(
+                modifier = Modifier
+                    .padding(bottom = 5.dp)
+                    .constrainAs(list) {
+                        top.linkTo(card.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        bottom.linkTo(add.top)
+                        height = Dimension.fillToConstraints
+                    },
+                list = state.value
+            )
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier
+                    .padding(end = 5.dp, bottom = 5.dp)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Zinc)
+                    .constrainAs(add) {
+                        bottom.linkTo(parent.bottom)
+                        end.linkTo(parent.end)
+                    }
+                    .clickable {
+                        navController.navigate("/add")
+                    }
+            )
 
-                // Testing : Navigation bar covering this
+            // Testing : Navigation bar covering this
 //            Text(text = "Arunabha!!", modifier = Modifier
 //                .padding(bottom =)
 //                .constrainAs(dummy) {
@@ -178,8 +178,8 @@ fun HomeScreen(navController: NavController) {
 //                    bottom.linkTo(parent.bottom)
 //                }
 //            )
-            }
         }
+    }
 }
 
 
