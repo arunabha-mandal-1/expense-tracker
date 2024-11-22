@@ -26,5 +26,8 @@ fun NavHostScreen(){
         composable(route = "/add"){
             AddTransaction(navController)
         }
+        composable(route = "/allTransactions"){
+            AllTransactionsScreen(navController)
+        }
     }
 }

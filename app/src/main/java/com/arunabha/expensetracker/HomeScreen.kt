@@ -144,10 +144,15 @@ fun HomeScreen(navController: NavController) {
                 onResetClick = {
                     coroutineScope.launch {
                         val flag = viewModel.deleteTransactions()
-                        if(flag){
-                            Toast.makeText(context, "Transactions deleted successfully!", Toast.LENGTH_SHORT).show()
-                        }else{
-                            Toast.makeText(context, "Something went wrong!", Toast.LENGTH_SHORT).show()
+                        if (flag) {
+                            Toast.makeText(
+                                context,
+                                "Transactions deleted successfully!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            Toast.makeText(context, "Something went wrong!", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     }
                 }
@@ -164,7 +169,10 @@ fun HomeScreen(navController: NavController) {
                         bottom.linkTo(add.top)
                         height = Dimension.fillToConstraints
                     },
-                list = state.value
+                list = if(state.value.size < 5) state.value else state.value.subList(0, 5),
+                onSeeAllClicked = {
+                    navController.navigate("/allTransactions")
+                }
             )
             Icon(
                 imageVector = Icons.Default.Add,
@@ -299,7 +307,7 @@ fun CardRowItem(
 
 // TransactionList Composable to show recent transactions
 @Composable
-fun TransactionList(modifier: Modifier, list: List<TransactionEntity>) {
+fun TransactionList(modifier: Modifier, list: List<TransactionEntity>, onSeeAllClicked: () -> Unit) {
     LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
 
         // For heading of recent transactions
@@ -310,7 +318,7 @@ fun TransactionList(modifier: Modifier, list: List<TransactionEntity>) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = "Recent Transactions", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text(text = "See all", fontSize = 16.sp)
+                Text(text = "See all", fontSize = 16.sp, modifier = Modifier.clickable { onSeeAllClicked() })
             }
         }
 
