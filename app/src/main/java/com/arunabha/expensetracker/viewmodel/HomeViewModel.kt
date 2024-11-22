@@ -11,10 +11,13 @@ import com.arunabha.expensetracker.data.dao.TransactionDao
 import com.arunabha.expensetracker.data.model.TransactionEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class HomeViewModel(private val dao: TransactionDao) : ViewModel() {
-    val transactions = dao.getAllTransactions()
+    val transactions = dao.getAllTransactions().map {transactionList ->
+        transactionList.sortedByDescending { it.date }
+    }
 
     // Get total balance
     fun getBalance(list: List<TransactionEntity>): String {
