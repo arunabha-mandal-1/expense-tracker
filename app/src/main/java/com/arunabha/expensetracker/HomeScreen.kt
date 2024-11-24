@@ -329,7 +329,7 @@ fun TransactionList(modifier: Modifier, list: List<TransactionEntity>, onSeeAllC
                 amount = if (it.type == "Income") "+ $${it.amount}" else "- $${it.amount}",
                 icon = if (it.type == "Income") Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                 date = it.date.toString(),
-                color = if (it.type == "Income") Color.Green else Color.Red
+                color = if (it.type == "Income") Color(0xFF02C402) else Color.Red
             )
         }
     }
@@ -354,14 +354,14 @@ fun TransactionItem(title: String, amount: String, icon: ImageVector, date: Stri
 //                modifier = Modifier.size(40.dp)
 //            )
 
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(43.dp),
-                tint = color
-            )
+//            Icon(
+//                imageVector = icon,
+//                contentDescription = null,
+//                modifier = Modifier.size(43.dp),
+//                tint = color
+//            )
 
-            Spacer(modifier = Modifier.size(8.dp))
+//            Spacer(modifier = Modifier.size(8.dp))
 
             // Title and date of transaction
             Column {

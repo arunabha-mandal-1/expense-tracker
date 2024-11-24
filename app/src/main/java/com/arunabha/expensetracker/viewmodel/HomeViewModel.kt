@@ -1,21 +1,16 @@
 package com.arunabha.expensetracker.viewmodel
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import com.arunabha.expensetracker.Utils
 import com.arunabha.expensetracker.data.TransactionDatabase
 import com.arunabha.expensetracker.data.dao.TransactionDao
 import com.arunabha.expensetracker.data.model.TransactionEntity
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 class HomeViewModel(private val dao: TransactionDao) : ViewModel() {
-    val transactions = dao.getAllTransactions().map {transactionList ->
+    val transactions = dao.getAllTransactions().map { transactionList ->
         transactionList.sortedByDescending { it.date }
     }
 
@@ -64,6 +59,15 @@ class HomeViewModel(private val dao: TransactionDao) : ViewModel() {
         }
     }
 
+    // delete a transaction
+    suspend fun deleteTransaction(transactionEntity: TransactionEntity): Boolean {
+        return try {
+            dao.deleteTransaction(transactionEntity)
+            true
+        } catch (e: Throwable) {
+            false
+        }
+    }
 
     fun getItemIcon() {
         // Get icon based on type
