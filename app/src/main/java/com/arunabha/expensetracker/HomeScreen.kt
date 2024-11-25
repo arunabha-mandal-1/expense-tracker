@@ -188,7 +188,7 @@ fun HomeScreen(navController: NavController) {
                         end.linkTo(parent.end)
                     }
                     .clickable {
-                        navController.navigate("/add")
+                        navController.navigate("/add/null")
                     }
             )
 

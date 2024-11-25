@@ -70,11 +70,10 @@ import com.arunabha.expensetracker.data.model.TransactionEntity
 import com.arunabha.expensetracker.ui.theme.Zinc
 import com.arunabha.expensetracker.viewmodel.AddTransactionViewModel
 import com.arunabha.expensetracker.viewmodel.AddTransactionViewModelFactory
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddTransaction(navController: NavController) {
+fun AddTransaction(navController: NavController, transactionEntity: TransactionEntity?) {
 
     val viewModel = AddTransactionViewModelFactory(LocalContext.current).create(
         AddTransactionViewModel::class.java
@@ -148,19 +147,63 @@ fun AddTransaction(navController: NavController) {
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     },
+                transactionEntity,
                 onAddTransactionClick = {
-                    val flag =
-                        it.title.isEmpty() || it.amount.toString().isEmpty() || it.date.isEmpty()
-                                || it.category.isEmpty() || it.type.isEmpty()
-                    if (!flag) {
-                        coroutineScope.launch {
-                            if (viewModel.addTransaction(it)) {
-                                navController.popBackStack() // Back to previous screen
+                    Log.d("err2", it.title + it.amount + it.date + it.category + it.type)
+
+                    val updateFlag = (transactionEntity != null)
+                    val nullOrEmptyFlag =
+                        it.title.isNullOrEmpty() || it.amount.toString()
+                            .isNullOrEmpty() || it.date.isNullOrEmpty()
+                                || it.category.isNullOrEmpty() || it.type.isNullOrEmpty()
+
+                    if (updateFlag) {
+                        if (!nullOrEmptyFlag) {
+
+                            // update
+                            coroutineScope.launch {
+                                if (viewModel.updateTransaction(it)) {
+                                    navController.popBackStack() // Back to previous screen
+                                } else {
+
+                                    // database error
+                                    Toast.makeText(
+                                        context,
+                                        "Failed to update transaction!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                             }
+                        } else {
+                            // fill the fields
+                            Toast.makeText(context, "Fill up all the fields!", Toast.LENGTH_SHORT)
+                                .show()
+                            Log.d("err", it.title + it.amount + it.date + it.category + it.type)
                         }
                     } else {
-                        Toast.makeText(context, "Fill up all the fields!", Toast.LENGTH_SHORT).show()
-                        Log.d("err", it.title + it.amount + it.date + it.category + it.type)
+                        if (!nullOrEmptyFlag) {
+
+                            // add
+                            coroutineScope.launch {
+                                if (viewModel.addTransaction(it)) {
+                                    navController.popBackStack() // Back to previous screen
+                                } else {
+
+                                    // database error
+                                    Toast.makeText(
+                                        context,
+                                        "Failed to add transaction!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        } else {
+
+                            // fill the fields
+                            Toast.makeText(context, "Fill up all the fields!", Toast.LENGTH_SHORT)
+                                .show()
+                            Log.d("err", it.title + it.amount + it.date + it.category + it.type)
+                        }
                     }
                 }
             )
@@ -170,19 +213,21 @@ fun AddTransaction(navController: NavController) {
 
 // DataForm composable: Form to take input of transaction details
 @Composable
-fun DataForm(modifier: Modifier, onAddTransactionClick: (model: TransactionEntity) -> Unit) {
+fun DataForm(
+    modifier: Modifier,
+    transactionEntity: TransactionEntity?,
+    onAddTransactionClick: (model: TransactionEntity) -> Unit
+) {
 
 
-    val name = remember { mutableStateOf("") }
-    val amount = remember { mutableStateOf("") }
+    var name by remember { mutableStateOf(transactionEntity?.title ?: "") }
+//    var amount by remember { mutableStateOf(transactionEntity?.amount.toString() ?: "") }
+    var amount by remember { mutableStateOf(if (transactionEntity?.amount == null) "" else transactionEntity.amount.toString()) }
+    var date by remember { mutableStateOf(Utils.convertDateStringToMillis(transactionEntity?.date)) }
+    var category by remember { mutableStateOf(transactionEntity?.category ?: "") }
+    var type by remember { mutableStateOf(transactionEntity?.type ?: "") }
 
-    val date = remember { mutableStateOf(0L) }
-    val dateDialogVisibility = remember { mutableStateOf(false) }
-
-    val category = remember { mutableStateOf("") }
-
-    val type = remember { mutableStateOf("") }
-
+    var dateDialogVisibility by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -200,8 +245,8 @@ fun DataForm(modifier: Modifier, onAddTransactionClick: (model: TransactionEntit
         Spacer(modifier = Modifier.size(3.dp))
         OutlinedTextField(
             label = { Text("Transaction Name", fontSize = 14.sp, color = Color.Gray) },
-            value = name.value,
-            onValueChange = { name.value = it },
+            value = name,
+            onValueChange = { name = it },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(5.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -219,8 +264,8 @@ fun DataForm(modifier: Modifier, onAddTransactionClick: (model: TransactionEntit
         Spacer(modifier = Modifier.size(3.dp))
         OutlinedTextField(
             label = { Text("Amount", fontSize = 14.sp, color = Color.Gray) },
-            value = amount.value,
-            onValueChange = { amount.value = it },
+            value = amount,
+            onValueChange = { amount = it },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(5.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -238,7 +283,7 @@ fun DataForm(modifier: Modifier, onAddTransactionClick: (model: TransactionEntit
         Spacer(modifier = Modifier.size(3.dp))
         OutlinedTextField(
             label = { Text("Select Date", fontSize = 14.sp, color = Color.Gray) },
-            value = if (date.value == 0L) "" else Utils.formatDateToHumanReadableForm(date.value),
+            value = if (date == 0L) "" else Utils.formatDateToHumanReadableForm(date),
             onValueChange = { },
             modifier = Modifier
                 .fillMaxWidth()
@@ -254,7 +299,7 @@ fun DataForm(modifier: Modifier, onAddTransactionClick: (model: TransactionEntit
                     contentDescription = null,
                     tint = Color.Black,
                     modifier = Modifier.clickable {
-                        dateDialogVisibility.value = true
+                        dateDialogVisibility = true
                     }
                 )
             },
@@ -282,7 +327,8 @@ fun DataForm(modifier: Modifier, onAddTransactionClick: (model: TransactionEntit
                 "Education",
                 "Other"
             ),
-            onItemSelected = { category.value = it },
+            onItemSelected = { category = it },
+            item = category,
             label = "Select Category"
         )
         Spacer(modifier = Modifier.size(5.dp))
@@ -296,7 +342,8 @@ fun DataForm(modifier: Modifier, onAddTransactionClick: (model: TransactionEntit
                 "Income",
                 "Expense"
             ),
-            onItemSelected = { type.value = it },
+            onItemSelected = { type = it },
+            item = type,
             label = "Select Type"
         )
         Spacer(modifier = Modifier.size(8.dp))
@@ -313,12 +360,12 @@ fun DataForm(modifier: Modifier, onAddTransactionClick: (model: TransactionEntit
 //            enabled = !errFlag,
             onClick = {
                 val transaction = TransactionEntity(
-                    id = null,
-                    title = name.value,
-                    amount = amount.value.toDoubleOrNull() ?: 0.00,
-                    date = Utils.formatDateToHumanReadableForm(date.value),
-                    category = category.value,
-                    type = type.value
+                    id = transactionEntity?.id,
+                    title = name,
+                    amount = amount.toDoubleOrNull() ?: 0.00,
+                    date = Utils.formatDateToHumanReadableForm(date),
+                    category = category,
+                    type = type
                 )
                 onAddTransactionClick(transaction)
             }
@@ -332,14 +379,14 @@ fun DataForm(modifier: Modifier, onAddTransactionClick: (model: TransactionEntit
         }
 
         // Need date picker dialog
-        if (dateDialogVisibility.value) {
+        if (dateDialogVisibility) {
             TransactionDatePickerDialog(
                 onDateSelected = {
-                    date.value = it
-                    dateDialogVisibility.value = false
+                    date = it
+                    dateDialogVisibility = false
                 },
                 onDismiss = {
-                    dateDialogVisibility.value = false
+                    dateDialogVisibility = false
                 }
             )
         }
@@ -422,9 +469,14 @@ fun TransactionDropdown(list: List<String>, onItemSelected: (item: String) -> Un
 }
 
 @Composable
-fun DropdownSelector(list: List<String>, label: String, onItemSelected: (item: String) -> Unit) {
+fun DropdownSelector(
+    list: List<String>,
+    label: String,
+    item: String,
+    onItemSelected: (item: String) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedItem by remember { mutableStateOf("") }
+    var selectedItem by remember { mutableStateOf(item) }
     var textFieldSize by remember { mutableStateOf(Size.Zero) }
 
     val icon = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
@@ -485,5 +537,5 @@ fun DropdownSelector(list: List<String>, label: String, onItemSelected: (item: S
 @Composable
 @Preview(showBackground = true)
 fun AddTransactionPreview() {
-    AddTransaction(rememberNavController())
+    AddTransaction(rememberNavController(), null)
 }

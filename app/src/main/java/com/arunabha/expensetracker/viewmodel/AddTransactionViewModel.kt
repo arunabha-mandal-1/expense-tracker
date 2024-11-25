@@ -16,6 +16,16 @@ class AddTransactionViewModel(private val dao: TransactionDao) : ViewModel() {
             false
         }
     }
+
+    // update a transaction: It also should be in AllTransactions viewModel
+    suspend fun updateTransaction(transactionEntity: TransactionEntity): Boolean {
+        return try {
+            dao.updateTransaction(transactionEntity)
+            true
+        } catch (e: Throwable) {
+            false
+        }
+    }
 }
 
 class AddTransactionViewModelFactory(private val context: Context) : ViewModelProvider.Factory {

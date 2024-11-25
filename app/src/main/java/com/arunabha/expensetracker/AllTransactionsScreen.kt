@@ -1,5 +1,6 @@
 package com.arunabha.expensetracker
 
+import android.net.Uri
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -53,6 +54,8 @@ import com.arunabha.expensetracker.ui.theme.Zinc
 import com.arunabha.expensetracker.viewmodel.HomeViewModel
 import com.arunabha.expensetracker.viewmodel.HomeViewModelFactory
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @Composable
 fun AllTransactionsScreen(navController: NavController) {
@@ -104,7 +107,7 @@ fun AllTransactionsScreen(navController: NavController) {
 
             LazyColumn(modifier = Modifier.padding(horizontal = 5.dp, vertical = 3.dp)) {
                 // Transactions list
-                items(state.value) {
+                items(state.value) { transaction ->
 //                    TransactionItem(
 //                        title = it.title,
 //                        amount = if (it.type == "Income") "+ $${it.amount}" else "- $${it.amount}",
@@ -113,11 +116,16 @@ fun AllTransactionsScreen(navController: NavController) {
 //                        color = if (it.type == "Income") Color.Green else Color.Red
 //                    )
                     TransactionItemDetails(
-                        transactionEntity = it,
+                        transactionEntity = transaction,
                         onDeleteClicked = {
                             coroutineScope.launch {
-                                val flag = viewModel.deleteTransaction(it)
+                                val flag = viewModel.deleteTransaction(transaction)
                             }
+                        },
+                        onUpdateClicked = {
+                            // Passing transaction entity
+                            val json = Uri.encode(Json.encodeToString(transaction))
+                            navController.navigate("/add/$json")
                         }
                     )
                 }
@@ -133,7 +141,11 @@ fun Transactions() {
 }
 
 @Composable
-fun TransactionItemDetails(transactionEntity: TransactionEntity, onDeleteClicked: () -> Unit) {
+fun TransactionItemDetails(
+    transactionEntity: TransactionEntity,
+    onDeleteClicked: () -> Unit,
+    onUpdateClicked: () -> Unit
+) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val textColor = Color.White
     // What we have in the prev composable = title, amount, icon, date, color
@@ -255,7 +267,9 @@ fun TransactionItemDetails(transactionEntity: TransactionEntity, onDeleteClicked
                                 .padding(horizontal = 2.dp)
                                 .height(20.dp)
                                 .width(20.dp)
-                                .clickable { },
+                                .clickable {
+                                    onUpdateClicked()
+                                },
                             tint = textColor
                         )
                         Icon(
@@ -307,6 +321,7 @@ fun TransactionItemDetailsPreview() {
             "Education",
             "Expense"
         ),
-        onDeleteClicked = {}
+        onDeleteClicked = {},
+        onUpdateClicked = {}
     )
 }

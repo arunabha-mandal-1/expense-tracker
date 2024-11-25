@@ -59,7 +59,7 @@ class HomeViewModel(private val dao: TransactionDao) : ViewModel() {
         }
     }
 
-    // delete a transaction
+    // delete a transaction : It should be in AllTransactions viewModel
     suspend fun deleteTransaction(transactionEntity: TransactionEntity): Boolean {
         return try {
             dao.deleteTransaction(transactionEntity)
